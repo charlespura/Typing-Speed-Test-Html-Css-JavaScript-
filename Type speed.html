@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Test</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .navbar {
+      margin-bottom: 20px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #test-text {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .letter {
+      display: inline-block;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .correct {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .incorrect {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      resize: none;
+    }
+    textarea:disabled {
+      background-color: #f9f9f9;
+    }
+    #footer {
+      margin-top: 20px;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    #footer a {
+      text-decoration: none;
+      color: #007bff;
+      transition: color 0.3s ease;
+    }
+    #footer a:hover {
+      color: #0056b3;
+    }
+    body.dark {
+      background-color: #212529;
+      color: #f8f9fa;
+    }
+    body.dark .container {
+      background-color: #343a40;
+      color: #f8f9fa;
+    }
+    body.dark .correct {
+      background-color: #28a745;
+      color: white;
+    }
+    body.dark .incorrect {
+      background-color: #dc3545;
+      color: white;
+    }
+    body.dark textarea {
+      background-color: #495057;
+      color: #f8f9fa;
+      border-color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Typing Test</a>
+      <button class="btn btn-outline-dark" id="theme-toggle">
+        🌙
+      </button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="text-center">Typing Speed Test</h1>
+    <p id="level" class="text-center">Level: Easy</p>
+    <p id="test-text"></p>
+    <textarea id="user-input" placeholder="Start typing here..." disabled></textarea>
+    <div class="d-flex justify-content-between mt-3">
+      <button id="start-btn" class="btn btn-success">Start</button>
+      <button id="next-btn" class="btn btn-primary" disabled>Next Level</button>
+      <button id="reset-btn" class="btn btn-danger" disabled>Reset</button>
+    </div>
+    <p id="result" class="mt-3 text-center fw-bold"></p>
+  </div>
+  <footer id="footer">
+    <p>Created by Charles Pura</p>
+    <p>
+      <a href="https://github.com/charlespura" target="_blank">@charlespura GitHub</a> |
+      <a href="https://linkedin.com/in/charlespura" target="_blank">@charlespura LinkedIn</a>
+    </p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const levels = [
+      { level: "Easy", text: "The quick brown fox jumps over the lazy dog." },
+      { level: "Medium", text: "Typing tests measure your ability to type quickly and accurately." },
+      { level: "Hard", text: "The efficiency of a typist is measured by their speed and precision under stress." }
+    ];
+
+    let currentLevel = 0;
+    let startTime;
+
+    const levelText = document.getElementById("level");
+    const testText = document.getElementById("test-text");
+    const userInput = document.getElementById("user-input");
+    const startBtn = document.getElementById("start-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const result = document.getElementById("result");
+    const themeToggle = document.getElementById("theme-toggle");
+
+    function loadLevel() {
+      const level = levels[currentLevel];
+      levelText.textContent = `Level: ${level.level}`;
+      testText.innerHTML = level.text
+        .split("")
+        .map(char => `<span class="letter">${char}</span>`)
+        .join("");
+      userInput.value = "";
+      result.textContent = "";
+      userInput.disabled = true;
+      nextBtn.disabled = true;
+      resetBtn.disabled = true;
+      startBtn.disabled = false;
+    }
+
+    function highlightLetters() {
+      const letters = testText.querySelectorAll(".letter");
+      const typedText = userInput.value.split("");
+
+      letters.forEach((letterSpan, index) => {
+        if (typedText[index] === undefined) {
+          letterSpan.classList.remove("correct", "incorrect");
+        } else if (letterSpan.textContent === typedText[index]) {
+          letterSpan.classList.add("correct");
+          letterSpan.classList.remove("incorrect");
+        } else {
+          letterSpan.classList.add("incorrect");
+          letterSpan.classList.remove("correct");
+        }
+      });
+    }
+
+    startBtn.addEventListener("click", () => {
+      userInput.value = "";
+      userInput.disabled = false;
+      userInput.focus();
+      startTime = new Date().getTime();
+      result.textContent = "";
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+    });
+
+    userInput.addEventListener("input", () => {
+      highlightLetters();
+      const letters = testText.querySelectorAll(".letter");
+      const typedText = userInput.value;
+
+      if (typedText === levels[currentLevel].text) {
+        const endTime = new Date().getTime();
+        const timeTakenMs = endTime - startTime;
+        const timeTakenSeconds = timeTakenMs / 1000;
+
+        // Calculate statistics
+        const wordCount = levels[currentLevel].text.split(" ").length;
+        const wordsPerMinute = Math.round((wordCount / timeTakenSeconds) * 60);
+
+        // Display results
+        result.textContent = `Your typing speed: ${wordsPerMinute} WPM`;
+        userInput.disabled = true;
+        nextBtn.disabled = currentLevel === levels.length - 1;
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentLevel < levels.length - 1) {
+        currentLevel++;
+        loadLevel();
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      loadLevel();
+    });
+
+    // Theme Toggle
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      themeToggle.textContent = isDark ? "☀️" : "🌙";
+    });
+
+    loadLevel();
+  </script>
+</body>
+</html>
